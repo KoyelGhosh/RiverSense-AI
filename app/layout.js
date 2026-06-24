@@ -1,8 +1,8 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "AquaDNA - River Biodiversity Intelligence",
-  description: "AI-powered biodiversity monitoring platform",
+  title: "RiverSense AI | Dashboard", //  Your new polished title!
+  description: "Automated eDNA biodiversity monitoring and alert system.",
 };
 
 export default function RootLayout({ children }) {

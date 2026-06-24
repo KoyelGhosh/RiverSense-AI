@@ -1,10 +1,12 @@
 import smtplib
 from email.message import EmailMessage
 import os
+from dotenv import load_dotenv
+load_dotenv()
 
 # IMPORTANT: Put your email and the 16-letter App Password here!
-SENDER_EMAIL = "your.email@gmail.com" 
-SENDER_PASSWORD = "your-16-letter-app-password"
+SENDER_EMAIL = os.getenv("SENDER_EMAIL")
+SENDER_PASSWORD = os.getenv("SENDER_PASSWORD")
 
 def send_alert_email(target_department: str, recipient_email: str, analysis_id: int, pdf_path: str, score: float):
     """Drafts an email, attaches the PDF report, and sends it to the authorities."""

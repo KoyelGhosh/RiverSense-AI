@@ -192,7 +192,7 @@ def create_reports(analysis_id: int, background_tasks: BackgroundTasks, db: Sess
     db.commit()
 
     # 4. BACKGROUND EMAIL SERVICE TRANSMISSION PIPELINE
-    test_recipient = "your.email@gmail.com"  # Replace this with your test account string
+    test_recipient = "gharaswati9@gmail.com"  # Replace this with your test account string
     background_tasks.add_task(
         send_alert_email, 
         target_department="Central Pollution Control Board", 

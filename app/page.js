@@ -3,6 +3,32 @@ import React, { useState, useEffect } from 'react';
 import { Download, Loader2, ShieldAlert, Activity, FileText, UploadCloud, File, AlertTriangle, TrendingDown, Eye, Layers, Dna, Bell } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, BarChart, Bar, Cell } from 'recharts';
 
+// ==========================================
+// DYNAMIC COUNTER COMPONENT (ANIMATION ENGINE)
+// ==========================================
+const AnimatedScore = ({ targetScore }) => {
+  const [count, setCount] = useState(0);
+
+  useEffect(() => {
+    let start = 0;
+    const end = parseInt(targetScore) || 0;
+    if (start === end) return;
+
+    let totalMiliseconds = 1200; // Complete animation over 1.2s for maximum visual drama
+    let incrementTime = Math.abs(Math.floor(totalMiliseconds / end));
+
+    let timer = setInterval(() => {
+      start += 1;
+      setCount(start);
+      if (start === end) clearInterval(timer);
+    }, incrementTime);
+
+    return () => clearInterval(timer);
+  }, [targetScore]);
+
+  return <span className="text-3xl font-black tracking-tight">{count}</span>;
+};
+
 // --- VISUALIZATION SUB-SYSTEM: MULTI-NODE INTERACTIVE MAP ---
 function RiverMap({ activeSegment, onSelectSegment, segmentData }) {
   const [MapComponents, setMapComponents] = useState(null);
@@ -152,19 +178,37 @@ export default function Home() {
     if (e.target.files[0]) setFile(e.target.files[0]);
   };
 
-  // 🌟 NEW FUNCTION: PREVENT RUNTIME CRASHES ON REPORT ACTION
   const handleDownloadPDF = async () => {
     try {
       setIsDownloading(true);
-      // Dual endpoint architecture handshake simulation
-      await fetch(`https://three-bats-win.loca.lt/report/generate/${analysisId || 'mock_id'}`, {
-        method: "POST",
-        headers: { "Bypass-Tunnel-Reminder": "true" }
+      
+      const generateResponse = await fetch(`http://127.0.0.1:8000/report/generate/${analysisId || 'mock_id'}`, {
+        method: "POST"
       });
-      alert("Report generation request dispatched to ReportLab backend channel successfully!");
+
+      if (!generateResponse.ok) throw new Error("Generation pipeline failed");
+      
+      const downloadResponse = await fetch(`http://127.0.0.1:8000/report/download/${analysisId || 'mock_id'}?file_format=pdf`, {
+        method: "GET"
+      });
+
+      if (!downloadResponse.ok) throw new Error("File retrieval stream failed");
+
+      const blob = await downloadResponse.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `RiverSense_Ecosystem_Report_${analysisId || 'analysis'}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      
+      a.remove();
+      window.URL.revokeObjectURL(url);
+
       setIsDownloading(false);
     } catch (err) {
       console.error("PDF Handler disruption:", err);
+      alert("Frontend link to backend reporting channel disrupted.");
       setIsDownloading(false);
     }
   };
@@ -175,12 +219,11 @@ export default function Home() {
     try {
       setIsAnalyzing(true);
       
-      // STEP 1: INGESTION FLOW
       const formData = new FormData();
       formData.append("file", file);
       formData.append("location", activeSegment); 
 
-      const uploadResponse = await fetch("https://three-bats-win.loca.lt/upload", { 
+      const uploadResponse = await fetch("http://127.0.0.1:8000/upload", { 
         method: "POST", 
         body: formData,
         headers: {
@@ -192,8 +235,7 @@ export default function Home() {
       const savedUploadId = uploadData.upload_id;
       setUploadId(savedUploadId);
 
-      // STEP 2: ANALYSIS FLOW
-      const analyzeResponse = await fetch(`https://three-bats-win.loca.lt/analyze/${savedUploadId}`, { 
+      const analyzeResponse = await fetch(`http://127.0.0.1:8000/analyze/${savedUploadId}`, { 
         method: "POST",
         headers: {
           "Bypass-Tunnel-Reminder": "true"
@@ -202,7 +244,6 @@ export default function Home() {
       
       const analyzeData = await analyzeResponse.json();
       
-      // Save analysis ID tracking token safely
       if (analyzeData && analyzeData.analysis_id) {
         setAnalysisId(analyzeData.analysis_id);
       }
@@ -214,8 +255,6 @@ export default function Home() {
 
     } catch (error) {
       console.error("API Pipeline Connection Disrupted:", error);
-      
-      // 🛡️ EMERGENCY HACKATHON BACKUP SAFETY NET
       console.log("Switching to offline presentation simulation backup state...");
       setTimeout(() => {
         setIsAnalyzing(false);
@@ -341,13 +380,17 @@ export default function Home() {
               </div>
             </div>
           ) : showResults ? (
-            <>
+            <div className="space-y-6 opacity-0 [animation:fadeIn_0.6s_ease-out_forwards]">
               {/* PRIMARY ROW: DIGITAL TWIN LOGS & GEOSPATIAL MAPS */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <RiverMap activeSegment={activeSegment} onSelectSegment={setActiveSegment} segmentData={masterRiverDatabase} />
                 
                 {/* ECOSYSTEM DIGITAL TWIN INDEX COMPONENT */}
-                <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 flex flex-col justify-between">
+                <div className={`border border-slate-800 rounded-xl p-4 flex flex-col justify-between transition-all duration-500 ${
+                  currentDataset.healthScore >= 60 
+                    ? 'bg-slate-900 shadow-[0_0_20px_rgba(16,185,129,0.08)]' 
+                    : 'bg-slate-900 shadow-[0_0_25px_rgba(244,63,94,0.15)]'
+                }`}>
                   <div className="flex justify-between items-center border-b border-slate-800 pb-2 mb-3">
                     <div className="flex items-center gap-2 text-blue-400 font-bold text-xs uppercase tracking-wider">
                       <Layers className="w-4 h-4" /> Ecosystem Digital Twin Index
@@ -357,9 +400,18 @@ export default function Home() {
                     </span>
                   </div>
                   <div className="grid grid-cols-2 gap-3 text-xs">
-                    <div className="bg-slate-950/60 border border-slate-800/80 p-2.5 rounded-lg">
-                      <p className="text-slate-500 text-[10px]">Species Diversity Index</p>
-                      <p className="text-lg font-black text-slate-200">{currentDataset.digitalTwin.diversity}%</p>
+                    {/* DYNAMIC GLOWING HEALTH INDEX CONTAINER BADGE */}
+                    <div className={`border p-2.5 rounded-lg flex flex-col justify-between transition-all duration-500 ${
+                      currentDataset.healthScore >= 60 
+                        ? 'bg-slate-950/60 border-slate-800/80 text-emerald-400' 
+                        : 'bg-rose-950/20 border-rose-900/50 text-rose-400 animate-pulse'
+                    }`}>
+                      <p className="text-slate-500 text-[10px]">Calculated Health Index</p>
+                      <p className="mt-1 flex items-baseline gap-0.5">
+                        {/* ⚡ Dynamic Animating Count-up Engine */}
+                        <AnimatedScore targetScore={currentDataset.healthScore} />
+                        <span className="text-xs font-semibold text-slate-500">/100</span>
+                      </p>
                     </div>
                     <div className="bg-slate-950/60 border border-slate-800/80 p-2.5 rounded-lg">
                       <p className="text-slate-500 text-[10px]">Water Structural Quality</p>
@@ -381,7 +433,7 @@ export default function Home() {
               </div>
 
               {/* SECOND ROW: TIMELINE GRAPHS & DISTRIBUTION METRICS */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 opacity-0 [animation:fadeIn_0.5s_ease-out_0.2s_forwards]">
                 
                 {/* River Health Timeline Component */}
                 <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
@@ -394,7 +446,16 @@ export default function Home() {
                         <XAxis dataKey="m" stroke="#64748b" fontSize={10} tickLine={false} />
                         <YAxis stroke="#64748b" fontSize={10} domain={[0, 100]} tickLine={false} />
                         <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', fontSize: '11px' }} />
-                        <Line type="monotone" dataKey="s" stroke="#f43f5e" strokeWidth={3} dot={{ fill: '#f43f5e', r: 4 }} />
+                        <Line 
+                        type="monotone" 
+                        dataKey="s" 
+                        stroke="#f43f5e" 
+                        strokeWidth={3} 
+                        dot={{ fill: '#f43f5e', r: 4 }}
+                        isAnimationActive={true}
+                        animationDuration={1500}
+                        animationEasing="ease-in-out"
+                        />
                       </LineChart>
                     </ResponsiveContainer>
                   </div>
@@ -411,10 +472,16 @@ export default function Home() {
                         <XAxis dataKey="name" stroke="#64748b" fontSize={10} tickLine={false} />
                         <YAxis stroke="#64748b" fontSize={10} tickLine={false} />
                         <Tooltip contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', fontSize: '11px' }} />
-                        <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                          {currentDataset.distributionData.map((entry, index) => (
-                            <Cell key={`cell-${index}`} fill={index === 0 ? '#3b82f6' : index === 1 ? '#10b981' : index === 2 ? '#f59e0b' : '#a855f7'} />
-                          ))}
+                        <Bar 
+                        dataKey="value" 
+                        radius={[4, 4, 0, 0]}
+                        isAnimationActive={true}
+                        animationDuration={1200}
+                        animationEasing="ease-out"
+                        >
+                        {currentDataset.distributionData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={index === 0 ? '#3b82f6' : index === 1 ? '#10b981' : index === 2 ? '#f59e0b' : '#a855f7'} />
+                        ))}
                         </Bar>
                       </BarChart>
                     </ResponsiveContainer>
@@ -424,7 +491,7 @@ export default function Home() {
               </div>
 
               {/* THIRD ROW: PREDICTIVE WARNING SYSTEMS & CLEANUP IMPACT */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 opacity-0 [animation:fadeIn_0.5s_ease-out_0.3s_forwards]">
                 
                 {/* AI Early Warning System Component */}
                 <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 space-y-3">
@@ -463,7 +530,7 @@ export default function Home() {
               </div>
 
               {/* FOURTH ROW: GEMINI LOG & SPECIES TRACKER */}
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 opacity-0 [animation:fadeIn_0.5s_ease-out_0.4s_forwards]">
                 <div className="flex items-center gap-2 text-blue-400 font-bold text-xs uppercase tracking-wider mb-2">
                   <FileText className="w-4 h-4"/> AI Automated Conservation Report
                 </div>
@@ -472,7 +539,7 @@ export default function Home() {
                 </p>
               </div>
 
-              <div className="bg-slate-900 border border-slate-800 rounded-xl p-4">
+              <div className="bg-slate-900 border border-slate-800 rounded-xl p-4 opacity-0 [animation:fadeIn_0.5s_ease-out_0.5s_forwards]">
                 <h3 className="text-xs font-bold text-slate-400 mb-3 uppercase tracking-wider">Species Identification Sequence Ledger</h3>
                 <div className="space-y-2">
                   {currentDataset.detectedSpecies.map((species, i) => (
@@ -495,7 +562,7 @@ export default function Home() {
                   ))}
                 </div>
               </div>
-            </>
+            </div>
           ) : (
             /* DEFAULT EMPTY INTRO DASHBOARD GATEWAY WITH SCI-FI DNA BLUEPRINT */
             <div className="h-[600px] border-2 border-dashed border-slate-800 bg-slate-900/20 rounded-2xl flex flex-col items-center justify-center p-8 text-center">

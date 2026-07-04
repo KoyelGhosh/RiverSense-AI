@@ -44,13 +44,12 @@ When a river scores below the healthy threshold, the RiverSense AI decision engi
 
 * **TEAM LEADER:** Thivisha 
   * **Role:** AI/ML Pipeline (DNABERT Fine-tuning and Automation)
-  * 📄 *See [ML_CONTRIBUTION.md](ML_CONTRIBUTION.md) for details.*
 * **TEAM MEMBER:** Koyel Ghosh 
   * **Role:** Backend Architecture (FastAPI + SQLAlchemy + Alert Pipeline)
   * 📄 *See [BACKEND_CONTRIBUTION.md](BACKEND_CONTRIBUTION.md) for details.*
 * **TEAM MEMBER:** Swati Ghara 
   * **Role:** Frontend Dashboard (React + Tailwind)
-  * 📄 *See FRONTEND_CONTRIBUTION.md for details.*
+  
 
 ---
 

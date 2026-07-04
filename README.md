@@ -60,49 +60,77 @@ When a river scores below the healthy threshold, the RiverSense AI decision engi
 ```bash
 npm install
 npm run dev
-Open http://localhost:3000 to view the application.
 
-Backend (FastAPI)
-1. Clone the repository and navigate to the backend directory:
+```
 
-Bash
+*Open [http://localhost:3000](https://www.google.com/search?q=http://localhost:3000) to view the application.*
+
+### Backend (FastAPI)
+
+**1. Clone the repository and navigate to the backend directory:**
+
+```bash
 git clone [https://github.com/your-username/RiverSense-AI.git](https://github.com/your-username/RiverSense-AI.git)
 cd Riversense-backend
-2. Create and activate a virtual environment:
 
-Windows:
+```
 
-DOS
+**2. Create and activate a virtual environment:**
+
+* **Windows:**
+```cmd
 python -m venv venv
 venv\Scripts\activate
-Mac/Linux:
 
-Bash
+```
+
+
+* **Mac/Linux:**
+```bash
 python3 -m venv venv
 source venv/bin/activate
-3. Install the required dependencies:
 
-Bash
+```
+
+
+
+**3. Install the required dependencies:**
+
+```bash
 pip install -r requirements.txt
-4. Configure the Email Alert System:
-For the automated reporting pipeline to work, you must configure your SMTP credentials. Create a .env file in the backend root directory (or update your environment variables) with:
 
-Code snippet
+```
+
+**4. Configure the Email Alert System:**
+For the automated reporting pipeline to work, you must configure your SMTP credentials. Create a `.env` file in the backend root directory (or update your environment variables) with:
+
+```env
 SENDER_EMAIL="your-email@gmail.com"
 SENDER_PASSWORD="your-16-character-gmail-app-password"
-5. Start the Live Server:
 
-Bash
+```
+
+**5. Start the Live Server:**
+
+```bash
 uvicorn app.main:app --reload
-The API will be live at http://127.0.0.1:8000. You can test the endpoints and view the auto-generated Swagger documentation at http://127.0.0.1:8000/docs.
 
-🧬 Data Source
+```
+
+*The API will be live at [http://127.0.0.1:8000](http://127.0.0.1:8000). You can test the endpoints and view the auto-generated Swagger documentation at [http://127.0.0.1:8000/docs](https://www.google.com/search?q=http://127.0.0.1:8000/docs).*
+
+---
+
+## 🧬 Data Source
+
 Real metagenomic sequencing data from the Ganga river:
 
-Study: SRP190174
+* **Study:** SRP190174
+* **Run:** SRR8837334
+* **Source:** NCBI Sequence Read Archive
 
-Run: SRR8837334
+> **Built for Biothon 2026 — Environment & Biodiversity Track**
 
-Source: NCBI Sequence Read Archive
+```
 
-Built for Biothon 2026 — Environment & Biodiversity Track
+```
